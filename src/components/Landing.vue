@@ -19,10 +19,8 @@ export default {
 
   methods: {
     signIn () {
-      var appDomain = window.location.hostname
-      var privateKey = null
-      var authRequest = this.blockstack.makeAuthRequest(privateKey, appDomain)
-      this.blockstack.redirectUserToSignIn(authRequest)
+      const blockstack = this.blockstack
+      blockstack.redirectToSignIn()
     }
   }
 }

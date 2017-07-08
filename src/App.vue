@@ -19,13 +19,12 @@ export default {
   name: 'app',
   components: {Landing, Dashboard},
   mounted () {
-    if (this.blockstack.isUserSignedIn()) {
-      let vm = this
-      this.blockstack.loadUserData(function (userData) {
-        vm.user = userData.profile
-      })
-    } else if (this.blockstack.isSignInPending()) {
-      this.blockstack.signUserIn(function (userData) {
+    const blockstack = this.blockstack
+    if (blockstack.isUserSignedIn()) {
+      this.user = blockstack.loadUserData().profile
+    } else if (blockstack.isSignInPending()) {
+      blockstack.handlePendingSignIn()
+      .then((userData) => {
         window.location = window.location.origin
       })
     }

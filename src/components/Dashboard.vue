@@ -35,21 +35,7 @@
 </template>
 
 <script>
-// localStorage persistence
-var STORAGE_KEY = 'blockstack-todos'
-var todoStorage = {
-  fetch: function () {
-    var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    todos.forEach(function (todo, index) {
-      todo.id = index
-    })
-    todoStorage.uid = todos.length
-    return todos
-  },
-  save: function (todos) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-  }
-}
+var STORAGE_FILE = 'todos.json'
 
 export default {
   name: 'dashboard',
@@ -57,17 +43,22 @@ export default {
   data () {
     return {
       blockstack: window.blockstack,
-      todos: todoStorage.fetch(),
-      todo: ''
+      todos: [],
+      todo: '',
+      uidCount: 0
     }
   },
   watch: {
     todos: {
       handler: function (todos) {
-        todoStorage.save(todos)
+        const blockstack = this.blockstack
+        return blockstack.putFile(STORAGE_FILE, JSON.stringify(todos))
       },
       deep: true
     }
+  },
+  mounted () {
+    this.fetchData()
   },
   methods: {
     addTodo () {
@@ -75,11 +66,24 @@ export default {
         return
       }
       this.todos.unshift({
-        id: todoStorage.uid++,
+        id: this.uidCount++,
         text: this.todo.trim(),
         completed: false
       })
       this.todo = ''
+    },
+
+    fetchData () {
+      const blockstack = this.blockstack
+      blockstack.getFile(STORAGE_FILE)
+      .then((todosText) => {
+        var todos = JSON.parse(todosText || '[]')
+        todos.forEach(function (todo, index) {
+          todo.id = index
+        })
+        this.uidCount = todos.length
+        this.todos = todos
+      })
     },
 
     signOut () {
